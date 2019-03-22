@@ -100,10 +100,15 @@ This will give you a similar behavior like the mixin API.
 
 Q: 
 What's the difference between the mixin API and the widget API?
+
 A:
+
 Sadly, there's probably no prefect way to cache a widget's subtrees. Each of them have its own pros and cons.
-The mixin API allows you to return anything from your `fragment`: a list, a `PreferredSizeWidget`, a builder... which makes it the only way to go in some situation like caching a [Material AppBar](https://docs.flutter.io/flutter/material/AppBar-class.html), when parent widget `Scaffold` is expecting [a subtype of `Widget`](https://docs.flutter.io/flutter/material/Scaffold/appBar.html) rather than a `Widget` .
+
+The mixin API allows you to return anything from your `fragment`: a list, a `PreferredSizeWidget`, a builder... which makes it the only way to go in some situations like caching a [Material AppBar](https://docs.flutter.io/flutter/material/AppBar-class.html), when parent widget `Scaffold` is expecting [a subtype of `Widget`](https://docs.flutter.io/flutter/material/Scaffold/appBar.html) rather than a `Widget` .
+
 The widget API also has its own pros: you can use context in your builder and everything would work as expected, like when you want to use `InheritedModel` in your subtree.
+
 TL;DR: use `Fragment` widget when you want to use context, use `fragment` when you want to keep type on cache.
 
 ## Future Plans

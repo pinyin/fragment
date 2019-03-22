@@ -1,6 +1,6 @@
 name: fragment
 description: Easily prevent unnecessary build() calls in StatefulWidget and its subtrees.
-version: 0.0.2
+version: 0.0.3
 author: Bo Bao <bob432091@gmail.com>
 homepage: https://github.com/pinyin/fragment
 
