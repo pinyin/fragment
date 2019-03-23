@@ -1,7 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
+/// A mixin to add to your [State]
 mixin Fragments<W extends StatefulWidget> on State<W> {
+  /// Create a cached subtree.
+  /// [builder] will be called only when [deps] is different (not shallowly equal)
+  /// from the previous pass.
   T fragment<T>({@required T builder(), @required Iterable deps, Key key}) {
     if (key != null) {
       final isCacheReusable = _namedSubtrees.containsKey(key) &&

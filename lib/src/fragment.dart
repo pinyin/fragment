@@ -2,11 +2,15 @@ import 'package:flutter/widgets.dart';
 
 import 'fragments.dart';
 
+/// A widget to cache [builder] with [deps]
+/// The builder will be called only when [deps] is different (not shallowly equal)
+/// from the previous [deps].
 class Fragment extends StatefulWidget {
   final Widget Function(BuildContext context) builder;
   final Iterable deps;
 
-  const Fragment({Key key, this.builder, this.deps}) : super(key: key);
+  const Fragment({@required Key key, @required this.builder, this.deps})
+      : super(key: key);
 
   @override
   _FragmentState createState() => _FragmentState();

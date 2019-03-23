@@ -1,5 +1,7 @@
 # fragment
 
+[![Build Status](https://travis-ci.com/pinyin/fragment.svg?branch=master)](https://travis-ci.com/pinyin/fragment)
+
 Easily prevent unnecessary build() calls in StatefulWidget and its subtrees.
 
 If you know React, you may consider this as a `shouldComponentUpdate` alternate for Flutter.
@@ -91,9 +93,9 @@ class _FragmentContainerState extends State<FragmentContainer> with Fragments {
 
 When one of `key1`, `key2` and `key3` updates, the other two `Container` widgets in other lines won't be recreated.
 
-`fragment` method takes two parameters: a builder function which returns the target `Widget`, and an `Iterable` to determine when to call the builder. During each call, the second parameter is compared with the second parameter in previous call. If they are shallowly equal, current builder will be ignored and the cached widget is used as the return value of `fragment`, otherwise, the current builder gets called and its return value is cached and returned by `fragment`.
+`fragment` method takes two parameters: a `builder` function which returns the target `Widget`, and an `Iterable` to determine when to call the builder. During each call, the `deps` parameter is compared with the `deps` parameter in previous call. If they are shallowly equal, current `builder` will be ignored and the cached widget is used as the return value of `fragment`, otherwise, the current `builder` gets called and its return value is cached and returned by `fragment`.
 
-To know which previous `deps` should be used when comparing with a new one, the deps are added to a `List` to keep their order. All `fragment` calls in the same `State` instance must have consistent orders across different passes of `build` calls, so please don't use `fragment` in dynamic loops and conditionals.
+To know which previous `deps` should be used when comparing with the new one, the deps are added to a `List` to keep their order. All `fragment` calls in the same `State` instance must have consistent orders across different passes of `build` calls, so please don't use `fragment` in dynamic loops and conditionals.
 
 ### Widget API
 
