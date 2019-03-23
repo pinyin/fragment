@@ -9,7 +9,7 @@ class Fragment extends StatefulWidget {
   final Widget Function(BuildContext context) builder;
   final Iterable deps;
 
-  const Fragment({@required Key key, @required this.builder, this.deps})
+  const Fragment({@required this.builder, @required this.deps, Key key})
       : super(key: key);
 
   @override

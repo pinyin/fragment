@@ -9,3 +9,7 @@
 ## [0.1.0]
 
 * Make two APIs look similar.
+
+## [0.1.2]
+
+* Update document.
