@@ -10,7 +10,7 @@ The library comes with a mixin `Fragments` an a widget `Fragment`.
 
 ### Mixin API
 
-You can add `Fragments` to your `State` to get an additional method `fragment`: 
+You can add `Fragments` mixin to your `State` to get an additional method `fragment`: 
 
 ```dart
 
@@ -33,9 +33,9 @@ class _FragmentContainerState extends State<FragmentContainer> with Fragments {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        fragment(() => Container(), [widget.key1]),
-        fragment(() => Container(), [widget.key2]),
-        fragment(() => Container(), [widget.key3]),
+        fragment(builder: () => Container(), deps: [widget.key1]),
+        fragment(builder: () => Container(), deps: [widget.key2]),
+        fragment(builder: () => Container(), deps: [widget.key3]),
       ],
     );
   }
@@ -43,9 +43,9 @@ class _FragmentContainerState extends State<FragmentContainer> with Fragments {
 
 ```
 
-When one of `key1`, `key2` and `key3` updates, the other two `Container`s in other lines won't be recreated.
+When one of `key1`, `key2` and `key3` updates, the other two `Container` widgets in other lines won't be recreated.
 
-`fragment` method takes two parameters: a factory function which returns the target `Widget`, and an `Iterable` to determine when to call the factory. During each call, the second parameter is compared with the second parameter in previous call. If they are shallowly equal, the factory will be ignored and the return value from previous factory function is used as the return value of `fragment`, otherwise, the factory function is called and its return value is returned by `fragment`.
+`fragment` method takes two parameters: a builder function which returns the target `Widget`, and an `Iterable` to determine when to call the builder. During each call, the second parameter is compared with the second parameter in previous call. If they are shallowly equal, current builder will be ignored and the cached widget is used as the return value of `fragment`, otherwise, the builder gets called and its return value is cached and returned by `fragment`.
 
 All `fragment` calls' order must be consistent across different passes of builds, so please be careful when using `fragment` in loops and conditionals.
 
@@ -105,11 +105,11 @@ A:
 
 Sadly, there's probably no prefect way to cache a widget's subtrees. Each of them have its own pros and cons.
 
-The mixin API allows you to return anything from your `fragment`: a list, a `PreferredSizeWidget`, a builder... which makes it the only way to go in some situations like caching a [Material AppBar](https://docs.flutter.io/flutter/material/AppBar-class.html), when parent widget `Scaffold` is expecting [a subtype of `Widget`](https://docs.flutter.io/flutter/material/Scaffold/appBar.html) rather than a `Widget` .
+The mixin API allows you to return anything from your `fragment`: a list, a `PreferredSizeWidget`, a builder... which makes it the only way to go in some situations like caching a [Material AppBar](https://docs.flutter.io/flutter/material/AppBar-class.html), where the parent widget `Scaffold` is expecting [a subtype of `Widget`](https://docs.flutter.io/flutter/material/Scaffold/appBar.html) instead of a `Widget` .
 
-The widget API also has its own pros: you can use context in your builder and everything would work as expected, like when you want to use `InheritedModel` in your subtree.
+The widget API also has its own pros: you can use context in your builder and everything would work as expected, e.g. when you want to use `InheritedModel` in your subtree.
 
-TL;DR: use `Fragment` widget when you want to use context, use `fragment` when you want to keep type on cache.
+TL;DR: use `Fragment` widget when you want to use context, use `fragment` when you want to keep the type of your cached subtree.
 
 ## Future Plans
 

@@ -134,18 +134,27 @@ class _TestFragmentsState extends State<TestFragments> with Fragments {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        fragment(() {
-          widget.reportBuild(1);
-          return Container();
-        }, [widget.key1]),
-        fragment(() {
-          widget.reportBuild(2);
-          return Container();
-        }, [widget.key2]),
-        fragment(() {
-          widget.reportBuild(3);
-          return Container();
-        }, [widget.key3]),
+        fragment(
+          builder: () {
+            widget.reportBuild(1);
+            return Container();
+          },
+          deps: [widget.key1],
+        ),
+        fragment(
+          builder: () {
+            widget.reportBuild(2);
+            return Container();
+          },
+          deps: [widget.key2],
+        ),
+        fragment(
+          builder: () {
+            widget.reportBuild(3);
+            return Container();
+          },
+          deps: [widget.key3],
+        ),
       ],
     );
   }
