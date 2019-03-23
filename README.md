@@ -6,17 +6,53 @@ If you know React, you may consider this as a `shouldComponentUpdate` alternate 
 
 ## Usage
 
+```dart
+
+// Add a mixin to your state and call `fragment` method in the build method of your state
+class _SState extends State<S> with Fragments {
+  String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return fragment(
+      builder: () => Text(text), // widgets subtree to cache
+      deps: [text], // values used in subtree. 
+    );
+  }
+}
+
+// or use `Fragment` widget directly
+class _SState extends State<S> {
+  String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Fragment(
+      builder: (context) => Text(text),
+      deps: [text],
+    );
+  }
+}
+
+```
+
+Either way, the `Text` widget will be cached, until `text` is updated to a different string.
+
+`deps` accepts an `Iterable`, so you can declare multiple dependencies for your fragment.
+
+## API
+
 The library comes with a mixin `Fragments` an a widget `Fragment`.
 
 ### Mixin API
 
-You can add `Fragments` mixin to your `State` to get an additional method `fragment`: 
+After adding `Fragments` mixin to your `State`, you will get an additional method `fragment`: 
 
 ```dart
 
 import 'package:fragment/fragment.dart';
 
-
+// Create Widget like before 
 class FragmentContainer extends StatefulWidget {
   final int key1;
   final int key2;
@@ -28,14 +64,24 @@ class FragmentContainer extends StatefulWidget {
   _FragmentContainerState createState() => _FragmentContainerState();
 }
 
+// Create State with Fragments mixin
 class _FragmentContainerState extends State<FragmentContainer> with Fragments {
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        fragment(builder: () => Container(), deps: [widget.key1]),
-        fragment(builder: () => Container(), deps: [widget.key2]),
-        fragment(builder: () => Container(), deps: [widget.key3]),
+        fragment( // use fragment method to cache a subtree
+          builder: () => Container(),
+          deps: [widget.key1],
+        ), 
+        fragment(
+          builder: () => Container(),
+          deps: [widget.key2],
+        ), 
+        fragment(
+          builder: () => Container(), 
+          deps: [widget.key3],
+        ),
       ],
     );
   }
@@ -45,9 +91,9 @@ class _FragmentContainerState extends State<FragmentContainer> with Fragments {
 
 When one of `key1`, `key2` and `key3` updates, the other two `Container` widgets in other lines won't be recreated.
 
-`fragment` method takes two parameters: a builder function which returns the target `Widget`, and an `Iterable` to determine when to call the builder. During each call, the second parameter is compared with the second parameter in previous call. If they are shallowly equal, current builder will be ignored and the cached widget is used as the return value of `fragment`, otherwise, the builder gets called and its return value is cached and returned by `fragment`.
+`fragment` method takes two parameters: a builder function which returns the target `Widget`, and an `Iterable` to determine when to call the builder. During each call, the second parameter is compared with the second parameter in previous call. If they are shallowly equal, current builder will be ignored and the cached widget is used as the return value of `fragment`, otherwise, the current builder gets called and its return value is cached and returned by `fragment`.
 
-All `fragment` calls' order must be consistent across different passes of builds, so please be careful when using `fragment` in loops and conditionals.
+To know which previous `deps` should be used when comparing with a new one, the deps are added to a `List` to keep their order. All `fragment` calls in the same `State` instance must have consistent orders across different passes of `build` calls, so please don't use `fragment` in dynamic loops and conditionals.
 
 ### Widget API
 
@@ -71,21 +117,21 @@ class TestFragment extends StatefulWidget {
   _TestFragmentState createState() => _TestFragmentState();
 }
 
-class _TestFragmentState extends State<TestFragment> {
+class _TestFragmentState extends State<TestFragment> { // There's no need to add mixin
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
         Fragment(
-          builder: (BuildContext context) => Container(),
+          builder: (context) => Container(),
           deps: [widget.key1],
         ),
         Fragment(
-          builder: (BuildContext context) => Container(),
+          builder: (context) => Container(),
           deps: [widget.key2],
         ),
         Fragment(
-          builder: (BuildContext context) => Container(),
+          builder: (context) => Container(),
           deps: [widget.key3],
         ),
       ],
@@ -94,22 +140,24 @@ class _TestFragmentState extends State<TestFragment> {
 }
 ```
 
-This will give you a similar behavior like the mixin API.
+This will give you a similar behavior like the mixin API. Since every `Fragment` is a normal `Widget`, there's no need to enforce consistent order between `Fragment` instances.
+
+You can also use `Fragment` and `fragment` in the same `State`.
 
 ## Q & A
 
 Q: 
-What's the difference between the mixin API and the widget API?
+What's the difference between the mixin API `fragment` and the widget API `Fragment`?
 
 A:
 
 Sadly, there's probably no prefect way to cache a widget's subtrees. Each of them have its own pros and cons.
 
-The mixin API allows you to return anything from your `fragment`: a list, a `PreferredSizeWidget`, a builder... which makes it the only way to go in some situations like caching a [Material AppBar](https://docs.flutter.io/flutter/material/AppBar-class.html), where the parent widget `Scaffold` is expecting [a subtype of `Widget`](https://docs.flutter.io/flutter/material/Scaffold/appBar.html) instead of a `Widget` .
+The mixin API `fragment` allows you to return anything from your builder: a `List`, a `PreferredSizeWidget`, a builder function... which makes it the only way to go in some situations like caching a [Material AppBar](https://docs.flutter.io/flutter/material/AppBar-class.html), where the parent widget `Scaffold` is expecting [a special subtype of `Widget`](https://docs.flutter.io/flutter/material/Scaffold/appBar.html) instead of a `Widget` .
 
-The widget API also has its own pros: you can use context in your builder and everything would work as expected, e.g. when you want to use `InheritedModel` in your subtree.
+The widget API `Fragment` also has its own pros: you can use context in your builder and everything would work as expected, e.g. when you want to use `InheritedModel` in your subtree, the cached subtree will be rebuilt with the model, even if the corresponding `deps` are not changed.
 
-TL;DR: use `Fragment` widget when you want to use context, use `fragment` when you want to keep the type of your cached subtree.
+TL;DR: use `Fragment` widget when you want to use context or have a dynamic number of fragments, use `fragment` when you want to make a your cached subtree.
 
 ## Future Plans
 
