@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/pinyin/fragment.svg?branch=master)](https://travis-ci.com/pinyin/fragment)
 
-Easily prevent unnecessary build() calls in StatefulWidget and its subtrees.
+Prevent unnecessary build() calls in StatefulWidget and its subtrees in a readable way.
 
 If you know React, you may consider this as a `shouldComponentUpdate` alternate for Flutter.
 
@@ -97,6 +97,8 @@ When one of `key1`, `key2` and `key3` updates, the other two `Container` widgets
 
 To know which previous `deps` should be used when comparing with the new one, the deps are added to a `List` to keep their order. All `fragment` calls in the same `State` instance must have consistent orders across different passes of `build` calls, so please don't use `fragment` in dynamic loops and conditionals.
 
+`fragment` also accepts an experimental optional parameter `key`. Builders with the same `key` are considered as the same builder and excluded from no-key builders. Remember keyed builders are never released in the whole state lifecycle, so this may introduce weird bugs and should be used very carefully.
+
 ### Widget API
 
 Import and use `Fragment` as a widget:
@@ -149,6 +151,7 @@ You can also use `Fragment` and `fragment` in the same `State`.
 ## Q & A
 
 Q: 
+
 What's the difference between the mixin API `fragment` and the widget API `Fragment`?
 
 A:
