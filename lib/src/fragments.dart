@@ -15,7 +15,9 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
       if (isCacheReusable) {
         return _namedSubtrees[key].widget;
       }
+      _shouldDisableContext.current = true;
       final newWidget = builder();
+      _shouldDisableContext.current = false;
       _namedSubtrees[key] = _Subtree(newWidget, deps);
       return newWidget;
     } else {
