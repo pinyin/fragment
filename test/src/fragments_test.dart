@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fragment/fragment.dart';
 
+// TODO test named subtrees
+
 void main() {
   group('Fragments', () {
     testWidgets('should rebuild subtree only when deps are not identical',
@@ -37,32 +39,32 @@ void main() {
       ));
       expect(buildLog, [1, 2, 3, 1, 3, 2, 3]);
     });
-  });
-  testWidgets('should rebuild subtree when new root is of another type',
-      (tester) async {
-    final buildLog = <int>[];
-    await tester.pumpWidget(TestFragments(
-      reportBuild: (v) => buildLog.add(v),
-      key1: 1,
-      key2: 2,
-      key3: 3,
-      child: Container(),
-    ));
-    await tester.pumpWidget(TestFragments(
-      reportBuild: (v) => buildLog.add(v),
-      key1: 1,
-      key2: 2,
-      key3: 3,
-      child: Text('', textDirection: TextDirection.ltr),
-    ));
-    await tester.pumpWidget(TestFragments(
-      reportBuild: (v) => buildLog.add(v),
-      key1: -1,
-      key2: 2,
-      key3: 3,
-      child: Text('', textDirection: TextDirection.ltr),
-    ));
-    expect(buildLog, [1, 2, 3, 1, 2, 3, 1]);
+    testWidgets('should rebuild subtree when new root is of another type',
+        (tester) async {
+      final buildLog = <int>[];
+      await tester.pumpWidget(TestFragments(
+        reportBuild: (v) => buildLog.add(v),
+        key1: 1,
+        key2: 2,
+        key3: 3,
+        child: Container(),
+      ));
+      await tester.pumpWidget(TestFragments(
+        reportBuild: (v) => buildLog.add(v),
+        key1: 1,
+        key2: 2,
+        key3: 3,
+        child: Text('', textDirection: TextDirection.ltr),
+      ));
+      await tester.pumpWidget(TestFragments(
+        reportBuild: (v) => buildLog.add(v),
+        key1: -1,
+        key2: 2,
+        key3: 3,
+        child: Text('', textDirection: TextDirection.ltr),
+      ));
+      expect(buildLog, [1, 2, 3, 1, 2, 3, 1]);
+    });
   });
 }
 

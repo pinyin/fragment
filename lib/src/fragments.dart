@@ -8,37 +8,40 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   /// [builder] will be called only when [deps] is different (not shallowly equal)
   /// from the previous pass.
   T fragment<T>({@required T builder(), @required Iterable deps, Key key}) {
-    if (key != null) {
-      final isCacheReusable = _namedSubtrees.containsKey(key) &&
-          _namedSubtrees[key].widget is T &&
-          shallowEquals(deps, _namedSubtrees[key].deps);
-      if (isCacheReusable) {
-        return _namedSubtrees[key].widget;
-      }
-      _shouldDisableContext.current = true;
-      final newWidget = builder();
-      _shouldDisableContext.current = false;
-      _namedSubtrees[key] = _Subtree(newWidget, deps);
-      return newWidget;
-    } else {
-      final isCursorLegal = _subtreeCursor.current < _anonymousSubtrees.length;
-      final isCacheReusable = isCursorLegal &&
-          _anonymousSubtrees[_subtreeCursor.current].widget is T &&
-          shallowEquals(deps, _anonymousSubtrees[_subtreeCursor.current].deps);
-      if (isCacheReusable) {
-        final cached = _anonymousSubtrees[_subtreeCursor.current].widget as T;
-        _subtreeCursor.current++;
-        return cached;
-      }
+    final isAnonymous = key == null;
+
+    // try use existing cache
+    final isCacheReusable = isAnonymous
+        ? _subtreeCursor.current < _anonymousSubtrees.length &&
+            _anonymousSubtrees[_subtreeCursor.current].widget is T &&
+            shallowEquals(deps, _anonymousSubtrees[_subtreeCursor.current].deps)
+        : _namedSubtrees.containsKey(key) &&
+            _namedSubtrees[key].widget is T &&
+            shallowEquals(deps, _namedSubtrees[key].deps);
+    if (isCacheReusable) {
+      final cached = isAnonymous
+          ? _anonymousSubtrees[_subtreeCursor.current].widget as T
+          : _namedSubtrees[key].widget as T;
+      if (isAnonymous) _subtreeCursor.current++;
+      return cached;
+    }
+
+    // rebuild subtree
+    _shouldDisableContext.current = true;
+    final newWidget = builder();
+    _shouldDisableContext.current = false;
+
+    // save subtree to cache
+    if (isAnonymous) {
       if (_subtreeCursor.current >= _anonymousSubtrees.length)
         _anonymousSubtrees.length = _subtreeCursor.current + 1;
-      _shouldDisableContext.current = true;
-      final newWidget = builder();
-      _shouldDisableContext.current = false;
       _anonymousSubtrees[_subtreeCursor.current] = _Subtree(newWidget, deps);
       _subtreeCursor.current++;
-      return newWidget;
+    } else {
+      _namedSubtrees[key] = _Subtree(newWidget, deps);
     }
+
+    return newWidget;
   }
 
   @override
