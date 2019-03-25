@@ -1,11 +1,10 @@
 import 'package:flutter/widgets.dart';
-
-import 'fragments.dart';
+import 'package:fragment/src/utils.dart';
 
 /// A widget to cache [builder] with [deps]
 /// The builder will be called only when [deps] is different (not shallowly equal)
 /// from the previous [deps].
-class Fragment extends StatefulWidget {
+class Fragment extends StatelessWidget {
   final Widget Function(BuildContext context) builder;
   final Iterable deps;
 
@@ -13,30 +12,13 @@ class Fragment extends StatefulWidget {
       : super(key: key);
 
   @override
-  _FragmentState createState() => _FragmentState();
-}
-
-class _FragmentState extends State<Fragment> with Fragments {
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // skip first didChangeDependencies call, which always runs after initState
-    if (didInitialized) hasContextUpdate = true;
-    didInitialized = true;
+  operator ==(Object other) {
+    if (other is! Fragment) return false;
+    return shallowEquals(deps, (other as Fragment).deps);
   }
 
   @override
   Widget build(BuildContext context) {
-    final result = fragment(
-      builder: () => widget.builder(context),
-      deps: hasContextUpdate ? [buildCount] : widget.deps,
-    );
-    hasContextUpdate = false;
-    buildCount++;
-    return result;
+    return builder(context);
   }
-
-  int buildCount = 0;
-  bool didInitialized = false;
-  bool hasContextUpdate = false;
 }

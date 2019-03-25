@@ -1,5 +1,6 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
+
+import 'utils.dart';
 
 /// A mixin to add to your [State]
 mixin Fragments<W extends StatefulWidget> on State<W> {
@@ -10,7 +11,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
     if (key != null) {
       final isCacheReusable = _namedSubtrees.containsKey(key) &&
           _namedSubtrees[key].widget is T &&
-          _shallowEquals(deps, _namedSubtrees[key].deps);
+          shallowEquals(deps, _namedSubtrees[key].deps);
       if (isCacheReusable) {
         return _namedSubtrees[key].widget;
       }
@@ -21,7 +22,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
       final isCursorLegal = _subtreeCursor.current < _anonymousSubtrees.length;
       final isCacheReusable = isCursorLegal &&
           _anonymousSubtrees[_subtreeCursor.current].widget is T &&
-          _shallowEquals(deps, _anonymousSubtrees[_subtreeCursor.current].deps);
+          shallowEquals(deps, _anonymousSubtrees[_subtreeCursor.current].deps);
       if (isCacheReusable) {
         final cached = _anonymousSubtrees[_subtreeCursor.current].widget as T;
         _subtreeCursor.current++;
@@ -84,8 +85,6 @@ class _Subtree {
 
   _Subtree(this.widget, this.deps);
 }
-
-final _shallowEquals = IterableEquality().equals;
 
 class _Ref<T> {
   _Ref(T init) : current = init;
