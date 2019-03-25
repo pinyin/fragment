@@ -64,16 +64,13 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
 
   @override
   BuildContext get context {
-    /// FIXME:
-    /// This will NOT prevent accessing `context` in builder.
-    /// It will only prevent `this.context` calls.
-    /// Leaving the code here until we find a better solution.
-    if (_shouldDisableContext.current)
-      throw 'To prevent unexpected behavior, accessing context inside fragment is disabled. \n'
-          'Please consider using the Fragment widget instead.';
-    return super.context;
+    _buildContext.current ??= _ContextProxy(
+        () => super.context, () => this._shouldDisableContext.current);
+
+    return _buildContext.current;
   }
 
+  final _Ref<BuildContext> _buildContext = _Ref(null);
   final _Ref<int> _subtreeCursor = _Ref(0);
   final Map<Key, _Subtree> _namedSubtrees = <Key, _Subtree>{};
   final List<_Subtree> _anonymousSubtrees = <_Subtree>[];
@@ -91,4 +88,80 @@ class _Subtree {
 class _Ref<T> {
   _Ref(T init) : current = init;
   T current;
+}
+
+class _ContextProxy implements BuildContext {
+  final BuildContext Function() _getContext;
+  final bool Function() _shouldThrow;
+
+  _ContextProxy(this._getContext, this._shouldThrow);
+
+  BuildContext get _context {
+    if (_shouldThrow())
+      throw 'To prevent unexpected behavior, accessing context inside fragment is disabled. \n'
+          'Please consider using the Fragment widget instead or use context from out of builder.';
+    return this._getContext();
+  }
+
+  @override
+  InheritedElement ancestorInheritedElementForWidgetOfExactType(
+      Type targetType) {
+    return _context.ancestorInheritedElementForWidgetOfExactType(targetType);
+  }
+
+  @override
+  RenderObject ancestorRenderObjectOfType(TypeMatcher matcher) {
+    return _context.ancestorRenderObjectOfType(matcher);
+  }
+
+  @override
+  State<StatefulWidget> ancestorStateOfType(TypeMatcher matcher) {
+    return _context.ancestorStateOfType(matcher);
+  }
+
+  @override
+  Widget ancestorWidgetOfExactType(Type targetType) {
+    return _context.ancestorWidgetOfExactType(targetType);
+  }
+
+  @override
+  RenderObject findRenderObject() {
+    return _context.findRenderObject();
+  }
+
+  @override
+  InheritedWidget inheritFromElement(InheritedElement ancestor,
+      {Object aspect}) {
+    return _context.inheritFromElement(ancestor);
+  }
+
+  @override
+  InheritedWidget inheritFromWidgetOfExactType(Type targetType,
+      {Object aspect}) {
+    return _context.inheritFromWidgetOfExactType(targetType);
+  }
+
+  @override
+  BuildOwner get owner => _context.owner;
+
+  @override
+  State<StatefulWidget> rootAncestorStateOfType(TypeMatcher matcher) {
+    return _context.rootAncestorStateOfType(matcher);
+  }
+
+  @override
+  Size get size => _context.size;
+
+  @override
+  void visitAncestorElements(bool Function(Element element) visitor) {
+    _context.visitAncestorElements(visitor);
+  }
+
+  @override
+  void visitChildElements(visitor) {
+    _context.visitChildElements(visitor);
+  }
+
+  @override
+  Widget get widget => _context.widget;
 }
