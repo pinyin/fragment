@@ -13,3 +13,8 @@
 ## [0.1.2]
 
 * Update document.
+
+## [0.1.3]
+
+* Forbid context access in `fragment()`
+* Diff by overriding `==` in Fragment 
