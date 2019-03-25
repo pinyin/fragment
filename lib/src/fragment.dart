@@ -13,7 +13,7 @@ class Fragment<T extends Widget> extends StatelessWidget {
 
   @override
   operator ==(Object other) {
-    if (other is Fragment) {
+    if (other is Fragment<T>) {
       return shallowEquals(deps, other.deps);
     }
     return false;
