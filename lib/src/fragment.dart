@@ -20,7 +20,7 @@ class Fragment<T extends Widget> extends StatelessWidget {
   }
 
   @override
-  int get hashCode => super.hashCode;
+  int get hashCode => deps.hashCode;
 
   @override
   T build(BuildContext context) {
