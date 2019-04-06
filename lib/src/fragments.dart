@@ -7,7 +7,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   /// Create a cached subtree.
   /// [builder] will be called only when [deps] is different (not shallowly equal)
   /// from the previous pass.
-  T fragment<T>({@required T builder(), @required Iterable deps, Key key}) {
+  T fragment<T>(T builder(), {@required Iterable deps, Key key}) {
     final isAnonymous = key == null;
 
     // try use existing cache

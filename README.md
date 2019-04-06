@@ -17,7 +17,7 @@ class _SState extends State<S> with Fragments {
   @override
   Widget build(BuildContext context) {
     return fragment(
-      builder: () => Text(text), // widgets subtree to cache
+      () => Text(text), // widgets subtree to cache
       deps: [text], // values used in subtree. 
     );
   }
@@ -30,7 +30,7 @@ class _SState extends State<S> {
   @override
   Widget build(BuildContext context) {
     return Fragment(
-      builder: (context) => Text(text),
+      (context) => Text(text),
       deps: [text],
     );
   }
@@ -73,15 +73,15 @@ class _FragmentContainerState extends State<FragmentContainer> with Fragments {
     return Column(
       children: <Widget>[
         fragment( // use fragment method to cache a subtree
-          builder: () => Container(),
+          () => Container(),
           deps: [widget.key1],
         ), 
         fragment(
-          builder: () => Container(),
+          () => Container(),
           deps: [widget.key2],
         ), 
         fragment(
-          builder: () => Container(), 
+          () => Container(),
           deps: [widget.key3],
         ),
       ],
@@ -93,7 +93,7 @@ class _FragmentContainerState extends State<FragmentContainer> with Fragments {
 
 When one of `key1`, `key2` and `key3` updates, the other two `Container` widgets in other lines won't be recreated.
 
-`fragment` method takes two parameters: a `builder` function which returns the target `Widget`, and an `Iterable` to determine when to call the builder. During each call, the `deps` parameter is compared with the `deps` parameter in previous call. If they are shallowly equal, current `builder` will be ignored and the cached widget is used as the return value of `fragment`, otherwise, the current `builder` gets called and its return value is cached and returned by `fragment`.
+`fragment` method takes two parameters: a builder function which returns the target `Widget`, and an `Iterable` to determine when to call the builder. During each call, the `deps` parameter is compared with the `deps` parameter in previous call. If they are shallowly equal, current builder will be ignored and the cached widget is used as the return value of `fragment`, otherwise, the current builder gets called and its return value is cached and returned by `fragment`.
 
 To know which previous `deps` should be used when comparing with the new one, the deps are added to a `List` to keep their order. All `fragment` calls in the same `State` instance must have consistent orders across different passes of `build` calls, so please don't use `fragment` in dynamic loops and conditionals.
 
@@ -127,15 +127,15 @@ class _TestFragmentState extends State<TestFragment> { // There's no need to add
     return Column(
       children: <Widget>[
         Fragment(
-          builder: (context) => Container(),
+          (context) => Container(),
           deps: [widget.key1],
         ),
         Fragment(
-          builder: (context) => Container(),
+          (context) => Container(),
           deps: [widget.key2],
         ),
         Fragment(
-          builder: (context) => Container(),
+          (context) => Container(),
           deps: [widget.key3],
         ),
       ],

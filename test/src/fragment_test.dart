@@ -88,28 +88,19 @@ class _TestFragmentState<T extends Widget> extends State<TestFragment<T>> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Fragment(
-          builder: (context) {
-            context.widget;
-            widget.reportBuild(1);
-            return widget.child;
-          },
-          deps: [widget.key1],
-        ),
-        Fragment(
-          builder: (context) {
-            widget.reportBuild(2);
-            return widget.child;
-          },
-          deps: [widget.key2],
-        ),
-        Fragment(
-          builder: (context) {
-            widget.reportBuild(3);
-            return widget.child;
-          },
-          deps: [widget.key3],
-        ),
+        Fragment((context) {
+          context.widget;
+          widget.reportBuild(1);
+          return widget.child;
+        }, deps: [widget.key1]),
+        Fragment((context) {
+          widget.reportBuild(2);
+          return widget.child;
+        }, deps: [widget.key2]),
+        Fragment((context) {
+          widget.reportBuild(3);
+          return widget.child;
+        }, deps: [widget.key3]),
       ],
     );
   }

@@ -87,32 +87,23 @@ class _TestFragmentsState<T extends Widget> extends State<TestFragments<T>>
     with Fragments {
   @override
   Widget build(BuildContext context) {
-    final s = fragment(builder: () => 'a', deps: []);
+    final s = fragment(() => 'a', deps: []);
     assert(s is String);
 
     return Column(
       children: <Widget>[
-        fragment(
-          builder: () {
-            widget.reportBuild(1);
-            return widget.child;
-          },
-          deps: [widget.key1],
-        ),
-        fragment(
-          builder: () {
-            widget.reportBuild(2);
-            return widget.child;
-          },
-          deps: [widget.key2],
-        ),
-        fragment(
-          builder: () {
-            widget.reportBuild(3);
-            return widget.child;
-          },
-          deps: [widget.key3],
-        ),
+        fragment(() {
+          widget.reportBuild(1);
+          return widget.child;
+        }, deps: [widget.key1]),
+        fragment(() {
+          widget.reportBuild(2);
+          return widget.child;
+        }, deps: [widget.key2]),
+        fragment(() {
+          widget.reportBuild(3);
+          return widget.child;
+        }, deps: [widget.key3]),
       ],
     );
   }
@@ -128,9 +119,6 @@ class _SState extends State<S> with Fragments {
 
   @override
   Widget build(BuildContext context) {
-    return fragment(
-      builder: () => Text(text),
-      deps: [text],
-    );
+    return fragment(() => Text(text), deps: [text]);
   }
 }

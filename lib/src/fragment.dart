@@ -8,7 +8,7 @@ class Fragment<T extends Widget> extends StatelessWidget {
   final T Function(BuildContext context) builder;
   final Iterable deps;
 
-  const Fragment({@required this.builder, @required this.deps, Key key})
+  const Fragment(this.builder, {@required this.deps, Key key})
       : super(key: key);
 
   @override
