@@ -16,23 +16,23 @@ class _SState extends State<S> with Fragments {
 
   @override
   Widget build(BuildContext context) {
-    return fragment(
-      () => Text(text), // widgets subtree to cache
-      deps: [text], // values used in subtree. 
-    );
+    return fragment(() {
+      return Text(text); // widgets subtree to cache
+    }, deps: [text]); // values used in subtree. 
+    // Text() will be preserved across builds unless text is updated
   }
 }
 
-// or use `Fragment` widget directly
+// or use `Fragment` widget 
 class _SState extends State<S> {
   String text;
 
   @override
   Widget build(BuildContext context) {
-    return Fragment(
-      (context) => Text(text),
-      deps: [text],
-    );
+    return Fragment((context) {
+      return Text(text);
+    }, deps: [text]);
+    // Text() will be preserved across builds unless text is updated
   }
 }
 

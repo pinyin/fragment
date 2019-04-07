@@ -18,3 +18,7 @@
 
 * Forbid context access in `fragment()`
 * Diff by overriding `==` in Fragment 
+
+## [0.2.0]
+
+* Update interface
