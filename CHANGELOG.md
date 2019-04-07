@@ -22,3 +22,7 @@
 ## [0.2.0]
 
 * Update interface
+
+## [0.2.1]
+
+* Update readme

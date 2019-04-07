@@ -91,13 +91,13 @@ class _FragmentContainerState extends State<FragmentContainer> with Fragments {
 
 ```
 
-When one of `key1`, `key2` and `key3` updates, the other two `Container` widgets in other lines won't be recreated.
+In the above example, when one of `key1`, `key2` or `key3` updates, the other two widgets won't be recreated.
 
-`fragment` method takes two parameters: a builder function which returns the target `Widget`, and an `Iterable` to determine when to call the builder. During each call, the `deps` parameter is compared with the `deps` parameter in previous call. If they are shallowly equal, current builder will be ignored and the cached widget is used as the return value of `fragment`, otherwise, the current builder gets called and its return value is cached and returned by `fragment`.
+`fragment` takes two parameters: a builder function which returns the cached object, and an `Iterable` to determine when to call the builder. During state's lifecycle, the `deps` parameter is contiguously compared with the previous `deps` from latest build. If they are shallowly equal, the previous widget is used as the return value of `fragment`, otherwise the builder gets called and its return value is returned by `fragment` and cached for future use.
 
-To know which previous `deps` should be used when comparing with the new one, the deps are added to a `List` to keep their order. All `fragment` calls in the same `State` instance must have consistent orders across different passes of `build` calls, so please don't use `fragment` in dynamic loops and conditionals.
+All non-keyed `fragment` calls in the same `State` instance must have consistent orders across different passes of `build` calls, so please don't use `fragment` in dynamic loops and conditionals. This behavior is inspired by React hooks.
 
-`fragment` also accepts an experimental optional parameter `key`. Builders with the same `key` are considered as the same builder and excluded from no-key builders. Remember keyed builders are never released in the whole state lifecycle, so this may introduce weird bugs and should be used very carefully.
+`fragment` also accepts an optional parameter `key` which accepts a `Key` object. Builders with the same `key` are excluded from the sequence of no-keyed builders. Keyed builders are not released in the state's whole lifecycle, so they can be used when a dynamic cache is needed.
 
 ### Widget API
 
@@ -146,7 +146,7 @@ class _TestFragmentState extends State<TestFragment> { // There's no need to add
 
 This will give you a similar behavior like the mixin API. Since every `Fragment` is a normal `Widget`, there's no need to enforce consistent order between `Fragment` instances.
 
-You can also use `Fragment` and `fragment` in the same `State`.
+You can use `Fragment` and `fragment` together in the same `State`.
 
 ## Q & A
 
@@ -160,9 +160,9 @@ Sadly, there's probably no prefect way to cache a widget's subtrees. Each of the
 
 The mixin API `fragment` allows you to return anything from your builder: a `List`, a `PreferredSizeWidget`, a builder function... which makes it the only way to go in some situations like caching a [Material AppBar](https://docs.flutter.io/flutter/material/AppBar-class.html), where the parent widget `Scaffold` is expecting [a special subtype of `Widget`](https://docs.flutter.io/flutter/material/Scaffold/appBar.html) instead of a `Widget` .
 
-The widget API `Fragment` also has its own pros: you can use context in your builder and everything would work as expected, e.g. when you want to use `InheritedModel` in your subtree, the cached subtree will be rebuilt with the model, even if the corresponding `deps` are not changed.
+The widget API `Fragment` also has its own pros: you can use context in your builder and everything would work as expected, e.g. when you want to use `InheritedModel` in your subtree, the cached subtree will be rebuilt with the model, even if its corresponding `deps` are not changed.
 
-TL;DR: use `Fragment` widget when you want to use context or have a dynamic number of fragments, use `fragment` when you want to make a your cached subtree.
+TL;DR: use `Fragment` widget when you want to use context in your subtree, use `fragment` when you want to cache something other than a `Widget`.
 
 ## Future Plans
 
