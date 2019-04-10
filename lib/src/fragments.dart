@@ -66,6 +66,12 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   }
 
   @override
+  void reassemble() {
+    _subtreeCursor.current = 0;
+    super.reassemble();
+  }
+
+  @override
   BuildContext get context {
     _buildContext.current ??= _ContextProxy(
         () => super.context, () => this._shouldDisableContext.current);
