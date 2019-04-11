@@ -68,6 +68,8 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   @override
   void reassemble() {
     _subtreeCursor.current = 0;
+    _namedSubtrees.clear();
+    _anonymousSubtrees.clear();
     super.reassemble();
   }
 
