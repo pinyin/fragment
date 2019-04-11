@@ -4,7 +4,7 @@
 
 Prevent unnecessary build() calls in StatefulWidget and its subtrees in a readable way.
 
-If you know React, you may consider this as a `shouldComponentUpdate` alternate for Flutter.
+If you know React, you may consider this as a `shouldComponentUpdate` or `Memo` alternate for Flutter.
 
 ## Usage
 
