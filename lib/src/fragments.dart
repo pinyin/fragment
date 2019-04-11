@@ -26,22 +26,26 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
       return cached;
     }
 
-    // rebuild subtree
-    _shouldDisableContext.current = true;
-    final newWidget = builder();
-    _shouldDisableContext.current = false;
+    // update cache
+    try {
+      // rebuild subtree
+      _shouldDisableContext.current = true;
+      final newWidget = builder();
 
-    // save subtree to cache
-    if (isAnonymous) {
-      if (_subtreeCursor.current >= _anonymousSubtrees.length)
-        _anonymousSubtrees.length = _subtreeCursor.current + 1;
-      _anonymousSubtrees[_subtreeCursor.current] = _Subtree(newWidget, deps);
-      _subtreeCursor.current++;
-    } else {
-      _namedSubtrees[key] = _Subtree(newWidget, deps);
+      // save subtree to cache
+      if (isAnonymous) {
+        if (_subtreeCursor.current >= _anonymousSubtrees.length)
+          _anonymousSubtrees.length = _subtreeCursor.current + 1;
+        _anonymousSubtrees[_subtreeCursor.current] = _Subtree(newWidget, deps);
+        _subtreeCursor.current++;
+      } else {
+        _namedSubtrees[key] = _Subtree(newWidget, deps);
+      }
+
+      return newWidget;
+    } finally {
+      _shouldDisableContext.current = false;
     }
-
-    return newWidget;
   }
 
   @override
@@ -68,6 +72,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   @override
   void reassemble() {
     _subtreeCursor.current = 0;
+    _shouldDisableContext.current = false;
     _namedSubtrees.clear();
     _anonymousSubtrees.clear();
     super.reassemble();
