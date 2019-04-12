@@ -29,7 +29,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
     // update cache
     try {
       // rebuild subtree
-      _shouldDisableContext.current = true;
+      _fragmentDepth.current++;
       final newWidget = builder();
 
       // save subtree to cache
@@ -44,7 +44,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
 
       return newWidget;
     } finally {
-      _shouldDisableContext.current = false;
+      _fragmentDepth.current--;
     }
   }
 
@@ -72,7 +72,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   @override
   void reassemble() {
     _subtreeCursor.current = 0;
-    _shouldDisableContext.current = false;
+    _fragmentDepth.current = 0;
     _namedSubtrees.clear();
     _anonymousSubtrees.clear();
     super.reassemble();
@@ -81,7 +81,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   @override
   BuildContext get context {
     _buildContext.current ??= _ContextProxy(
-        () => super.context, () => this._shouldDisableContext.current);
+        () => super.context, () => this._fragmentDepth.current > 0);
 
     return _buildContext.current;
   }
@@ -90,7 +90,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   final _Ref<int> _subtreeCursor = _Ref(0);
   final Map<Key, _Subtree> _namedSubtrees = <Key, _Subtree>{};
   final List<_Subtree> _anonymousSubtrees = <_Subtree>[];
-  final _Ref<bool> _shouldDisableContext = _Ref(false);
+  final _Ref<int> _fragmentDepth = _Ref(0);
 }
 
 @immutable

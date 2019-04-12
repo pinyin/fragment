@@ -30,3 +30,4 @@
 ## [0.2.2]
 
 * Always rebuilt fragments in hot reload
+* Allow nested `fragment()` calls
