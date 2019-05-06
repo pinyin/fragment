@@ -31,3 +31,7 @@
 
 * Always rebuilt fragments in hot reload
 * Allow nested `fragment()` calls
+
+## [0.3.0]
+
+* Provide previous value to builder

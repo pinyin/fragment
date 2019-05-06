@@ -7,30 +7,38 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   /// Create a cached subtree.
   /// [builder] will be called only when [deps] is different (not shallowly equal)
   /// from the previous pass.
-  T fragment<T>(T builder(), {Iterable deps = const [], Key key}) {
+  T fragment<T>(T builder(T prev), {Iterable deps = const [], Key key}) {
+    assert(_fragmentDepth.current == 0);
     final isAnonymous = key == null;
 
     // try use existing cache
-    final isCacheReusable = isAnonymous
+    final bool hasCache = isAnonymous
         ? _subtreeCursor.current < _anonymousSubtrees.length &&
-            _anonymousSubtrees[_subtreeCursor.current].widget is T &&
-            shallowEquals(deps, _anonymousSubtrees[_subtreeCursor.current].deps)
-        : _namedSubtrees.containsKey(key) &&
-            _namedSubtrees[key].widget is T &&
-            shallowEquals(deps, _namedSubtrees[key].deps);
-    if (isCacheReusable) {
-      final cached = isAnonymous
-          ? _anonymousSubtrees[_subtreeCursor.current].widget as T
-          : _namedSubtrees[key].widget as T;
-      if (isAnonymous) _subtreeCursor.current++;
-      return cached;
+            _anonymousSubtrees[_subtreeCursor.current].value is T
+        : _namedSubtrees.containsKey(key) && _namedSubtrees[key].value is T;
+
+    final T cachedValue = hasCache
+        ? isAnonymous
+            ? _anonymousSubtrees[_subtreeCursor.current].value as T
+            : _namedSubtrees[key].value as T
+        : null;
+
+    if (hasCache) {
+      final cachedDeps = isAnonymous
+          ? _anonymousSubtrees[_subtreeCursor.current].deps
+          : _namedSubtrees[key].deps;
+
+      if (shallowEquals(cachedDeps, deps)) {
+        _subtreeCursor.current++;
+        return cachedValue;
+      }
     }
 
     // update cache
     try {
       // rebuild subtree
       _fragmentDepth.current++;
-      final newWidget = builder();
+      final newWidget = builder(cachedValue);
 
       // save subtree to cache
       if (isAnonymous) {
@@ -86,10 +94,10 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
 
 @immutable
 class _Subtree {
-  final Object widget;
+  final Object value;
   final Iterable deps;
 
-  _Subtree(this.widget, this.deps);
+  _Subtree(this.value, this.deps);
 }
 
 class _Ref<T> {
