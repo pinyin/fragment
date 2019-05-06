@@ -8,10 +8,10 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   /// [builder] will be called only when [deps] is different (not shallowly equal)
   /// from the previous pass.
   T fragment<T>(T builder(T prev), {Iterable deps = const [], Key key}) {
+    // disable nested fragment() calls for now
     assert(_fragmentDepth.current == 0);
     final isAnonymous = key == null;
 
-    // try use existing cache
     final bool hasCache = isAnonymous
         ? _subtreeCursor.current < _anonymousSubtrees.length &&
             _anonymousSubtrees[_subtreeCursor.current].value is T
@@ -23,21 +23,22 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
             : _namedSubtrees[key].value as T
         : null;
 
+    // try use existing cache
     if (hasCache) {
       final cachedDeps = isAnonymous
           ? _anonymousSubtrees[_subtreeCursor.current].deps
           : _namedSubtrees[key].deps;
 
       if (shallowEquals(cachedDeps, deps)) {
-        _subtreeCursor.current++;
+        if (isAnonymous) _subtreeCursor.current++;
         return cachedValue;
       }
     }
 
     // update cache
     try {
-      // rebuild subtree
       _fragmentDepth.current++;
+      // rebuild subtree
       final newWidget = builder(cachedValue);
 
       // save subtree to cache
