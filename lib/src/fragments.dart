@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:flutter/widgets.dart';
 
 import 'utils.dart';
@@ -11,30 +9,30 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   /// from the previous pass.
   T fragment<T>(T builder(T prev), {Iterable deps = const [], Key key}) {
     if (root.isLocked.now) {
-      final parent = root.path.last;
+      final parent = root.container.now;
       final self = parent.children[parent.childCursor.now];
       assert(self.childCursor.now == 0);
 
       if (self.item.value is T && !shallowEquals(self.item.deps, deps)) {
-        root.path.addLast(self);
+        root.container.now = self;
         self.item = _CacheItem(builder(self.item.value), deps);
-        assert(identical(root.path.last, self));
-        root.path.removeLast();
+        assert(identical(root.container.now, self));
+        root.container.now = parent;
       }
 
       self.childCursor.now = 0;
       parent.childCursor.now++;
       return self.item.value;
     } else {
-      final parent = root.path.last;
+      final parent = root.container.now;
       final self = _CacheNode();
       parent.children.add(self);
       assert(identical(parent.children[parent.childCursor.now], self));
 
-      root.path.addLast(self);
+      root.container.now = self;
       self.item = _CacheItem(builder(null), deps);
-      assert(identical(root.path.last, self));
-      root.path.removeLast();
+      assert(identical(root.container.now, self));
+      root.container.now = parent;
 
       self.childCursor.now = 0;
       parent.childCursor.now++;
@@ -88,19 +86,18 @@ class _CacheItem {
 }
 
 class _CacheRoot with _HasChildren {
-  final Queue<_HasChildren> path = Queue();
+  final container = _Ref<_HasChildren>(null);
 
   final isLocked = _Ref(false);
 
   void reset() {
     super.reset();
     isLocked.now = false;
-    path.clear();
-    path.addLast(this);
+    container.now = this;
   }
 
   _CacheRoot() {
-    path.addLast(this);
+    container.now = this;
   }
 }
 
