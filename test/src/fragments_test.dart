@@ -14,56 +14,72 @@ void main() {
         key1: 1,
         key2: 2,
         key3: 3,
+        key4: 4,
         child: Container(),
       ));
+      expect(buildLog, [1, 4, 2, 3]);
+      buildLog.clear();
       await tester.pumpWidget(TestFragments(
         reportBuild: (v) => buildLog.add(v),
         key1: -1,
         key2: 2,
         key3: 3,
+        key4: 4,
         child: Container(),
       ));
+      expect(buildLog, [1]);
+      buildLog.clear();
       await tester.pumpWidget(TestFragments(
         reportBuild: (v) => buildLog.add(v),
         key1: -1,
         key2: 2,
         key3: -3,
+        key4: 4,
         child: Container(),
       ));
+      expect(buildLog, [3]);
+      buildLog.clear();
       await tester.pumpWidget(TestFragments(
         reportBuild: (v) => buildLog.add(v),
         key1: -1,
         key2: -2,
         key3: 3,
+        key4: 4,
         child: Container(),
       ));
-      expect(buildLog, [1, 2, 3, 1, 3, 2, 3]);
+      expect(buildLog, [2, 3]);
+      buildLog.clear();
+      await tester.pumpWidget(TestFragments(
+        reportBuild: (v) => buildLog.add(v),
+        key1: -1,
+        key2: -2,
+        key3: 3,
+        key4: -4,
+        child: Container(),
+      ));
+      expect(buildLog, [1, 4]);
+      buildLog.clear();
     });
     testWidgets('should rebuild subtree when new root is of another type',
         (tester) async {
       final buildLog = <int>[];
       await tester.pumpWidget(TestFragments(
         reportBuild: (v) => buildLog.add(v),
-        key1: 1,
-        key2: 2,
-        key3: 3,
         child: Container(),
       ));
+      expect(buildLog, [1, 4, 2, 3]);
+      buildLog.clear();
       await tester.pumpWidget(TestFragments(
         reportBuild: (v) => buildLog.add(v),
-        key1: 1,
-        key2: 2,
-        key3: 3,
         child: Text('', textDirection: TextDirection.ltr),
       ));
+      expect(buildLog, [1, 4, 2, 3]);
+      buildLog.clear();
       await tester.pumpWidget(TestFragments(
         reportBuild: (v) => buildLog.add(v),
-        key1: -1,
-        key2: 2,
-        key3: 3,
         child: Text('', textDirection: TextDirection.ltr),
       ));
-      expect(buildLog, [1, 2, 3, 1, 2, 3, 1]);
+      expect(buildLog, []);
     });
   });
 }
@@ -73,10 +89,17 @@ class TestFragments<T extends Widget> extends StatefulWidget {
   final int key1;
   final int key2;
   final int key3;
+  final int key4;
   final T child;
 
   const TestFragments(
-      {Key key, this.reportBuild, this.key1, this.key2, this.key3, this.child})
+      {Key key,
+      this.reportBuild,
+      this.key1,
+      this.key2,
+      this.key3,
+      this.child,
+      this.key4})
       : super(key: key);
 
   @override
@@ -94,8 +117,11 @@ class _TestFragmentsState<T extends Widget> extends State<TestFragments<T>>
       children: <Widget>[
         fragment((_) {
           widget.reportBuild(1);
+          fragment((_) {
+            widget.reportBuild(4);
+          }, deps: [widget.key4]);
           return widget.child;
-        }, deps: [widget.key1]),
+        }, deps: [widget.key1, widget.key4]),
         fragment((_) {
           widget.reportBuild(2);
           return widget.child;
