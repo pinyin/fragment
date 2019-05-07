@@ -77,9 +77,17 @@ void main() {
       buildLog.clear();
       await tester.pumpWidget(TestFragments(
         reportBuild: (v) => buildLog.add(v),
+        key1: 1,
         child: Text('', textDirection: TextDirection.ltr),
       ));
-      expect(buildLog, []);
+      expect(buildLog, [1]);
+      buildLog.clear();
+      await tester.pumpWidget(TestFragments(
+        reportBuild: (v) => buildLog.add(v),
+        key1: 1,
+        child: Container(),
+      ));
+      expect(buildLog, [1, 4, 2, 3]);
     });
   });
 }
@@ -132,19 +140,5 @@ class _TestFragmentsState<T extends Widget> extends State<TestFragments<T>>
         }, deps: [widget.key3]),
       ],
     );
-  }
-}
-
-class S extends StatefulWidget {
-  @override
-  _SState createState() => _SState();
-}
-
-class _SState extends State<S> with Fragments {
-  String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return fragment((_) => Text(text), deps: [text]);
   }
 }
