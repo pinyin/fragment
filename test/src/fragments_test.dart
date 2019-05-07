@@ -60,45 +60,16 @@ void main() {
       expect(buildLog, [1, 4]);
       buildLog.clear();
     });
-    testWidgets('should rebuild subtree when new root is of another type',
-        (tester) async {
-      final buildLog = <int>[];
-      await tester.pumpWidget(TestFragments(
-        reportBuild: (v) => buildLog.add(v),
-        child: Container(),
-      ));
-      expect(buildLog, [1, 4, 2, 3]);
-      buildLog.clear();
-      await tester.pumpWidget(TestFragments(
-        reportBuild: (v) => buildLog.add(v),
-        child: Text('', textDirection: TextDirection.ltr),
-      ));
-      expect(buildLog, [1, 4, 2, 3]);
-      buildLog.clear();
-      await tester.pumpWidget(TestFragments(
-        reportBuild: (v) => buildLog.add(v),
-        key1: 1,
-        child: Text('', textDirection: TextDirection.ltr),
-      ));
-      expect(buildLog, [1]);
-      buildLog.clear();
-      await tester.pumpWidget(TestFragments(
-        reportBuild: (v) => buildLog.add(v),
-        key1: 1,
-        child: Container(),
-      ));
-      expect(buildLog, [1, 4, 2, 3]);
-    });
   });
 }
 
-class TestFragments<T extends Widget> extends StatefulWidget {
+class TestFragments extends StatefulWidget {
   final Function(int) reportBuild;
   final int key1;
   final int key2;
   final int key3;
   final int key4;
-  final T child;
+  final Widget child;
 
   const TestFragments(
       {Key key,
@@ -111,11 +82,16 @@ class TestFragments<T extends Widget> extends StatefulWidget {
       : super(key: key);
 
   @override
-  _TestFragmentsState<T> createState() => _TestFragmentsState<T>();
+  _TestFragmentsState createState() => _TestFragmentsState();
 }
 
-class _TestFragmentsState<T extends Widget> extends State<TestFragments<T>>
-    with Fragments {
+class _TestFragmentsState extends State<TestFragments> with Fragments {
+  @override
+  void initState() {
+    super.initState();
+    print('init');
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = fragment((_) => 'a', deps: []);

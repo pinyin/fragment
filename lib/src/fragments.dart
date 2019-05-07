@@ -13,7 +13,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
       final self = parent.children[parent.childCursor.now];
       assert(self.childCursor.now == 0);
 
-      if (self.item.value is! T || !shallowEquals(self.item.deps, deps)) {
+      if (!shallowEquals(self.item.deps, deps)) {
         root.container.now = self;
         self.item = _CacheItem(builder(self.item.value), deps);
         assert(identical(root.container.now, self));
@@ -24,7 +24,6 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
       parent.childCursor.now++;
       return self.item.value;
     } else {
-      // FIXME lock disappears sometimes
       final parent = root.container.now;
       final self = _CacheNode();
       parent.children.add(self);
