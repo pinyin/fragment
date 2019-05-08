@@ -87,12 +87,6 @@ class TestFragments extends StatefulWidget {
 
 class _TestFragmentsState extends State<TestFragments> with Fragments {
   @override
-  void initState() {
-    super.initState();
-    print('init');
-  }
-
-  @override
   Widget build(BuildContext context) {
     final s = fragment((_, __) => 'a', keys: []);
     assert(s is String);

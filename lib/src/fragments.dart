@@ -9,73 +9,53 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   /// from the previous pass.
   T fragment<T>(T builder(T prev, Iterable prevKeys),
       {Iterable keys = const []}) {
-    if (root.isLocked.now) {
-      final parent = root.container.now;
-      final self = parent.children[parent.childCursor.now];
-      assert(self.childCursor.now == 0);
+    final parent = root.container.now;
+    final isInit = parent.children.length <= parent.childCursor.now;
+    final _CacheNode self =
+        isInit ? _CacheNode() : parent.children[parent.childCursor.now];
+    if (isInit) parent.children.add(self);
+    assert(self.childCursor.now == 0);
+    assert(identical(parent.children[parent.childCursor.now], self));
 
-      if (!shallowEquals(self.item.keys, keys)) {
-        root.container.now = self;
-        self.item = _CacheItem(builder(self.item.value, self.item.keys), keys);
-        assert(identical(root.container.now, self));
-        root.container.now = parent;
-      }
-
-      self.childCursor.now = 0;
-      parent.childCursor.now++;
-      return self.item.value;
-    } else {
-      final parent = root.container.now;
-      final self = _CacheNode();
-      parent.children.add(self);
-      assert(identical(parent.children[parent.childCursor.now], self));
-
+    if (isInit || !shallowEquals(self.item.keys, keys)) {
       root.container.now = self;
-      self.item = _CacheItem(builder(null, null), keys);
+      self.item = _CacheItem(builder(self.item?.value, self.item?.keys), keys);
       assert(identical(root.container.now, self));
       root.container.now = parent;
-
-      self.childCursor.now = 0;
-      parent.childCursor.now++;
-      return self.item.value;
     }
-  }
 
-  @override
-  @mustCallSuper
-  void didUpdateWidget(oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    root.childCursor.now = 0;
-    root.isLocked.now = true;
-  }
-
-  @override
-  @mustCallSuper
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (didInit.now) {
-      root.childCursor.now = 0;
-      root.isLocked.now = true;
-    } else {
-      didInit.now = true;
-    }
-  }
-
-  @override
-  @mustCallSuper
-  void setState(VoidCallback fn) {
-    super.setState(fn);
-    root.childCursor.now = 0;
-    root.isLocked.now = true;
+    self.childCursor.now = 0;
+    parent.childCursor.now++;
+    return self.item.value;
   }
 
   @override
   void reassemble() {
-    super.reassemble();
     root.reset();
+    didInit.now = false;
+    super.reassemble();
+  }
+
+  @override
+  void didChangeDependencies() {
+    root.childCursor.now = 0;
+    super.didChangeDependencies();
+  }
+
+  @override
+  void didUpdateWidget(oldWidget) {
+    root.childCursor.now = 0;
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  void setState(fn) {
+    root.childCursor.now = 0;
+    super.setState(fn);
   }
 
   final root = _CacheRoot();
+  final justReassembled = _Ref(false);
   final didInit = _Ref(false);
 }
 
@@ -89,11 +69,8 @@ class _CacheItem {
 class _CacheRoot with _HasChildren {
   final container = _Ref<_HasChildren>(null);
 
-  final isLocked = _Ref(false);
-
   void reset() {
     super.reset();
-    isLocked.now = false;
     container.now = this;
   }
 
@@ -121,4 +98,9 @@ mixin _HasChildren {
 class _Ref<T> {
   _Ref(T init) : now = init;
   T now;
+
+  @override
+  String toString() {
+    return "Ref:" + now.toString();
+  }
 }
