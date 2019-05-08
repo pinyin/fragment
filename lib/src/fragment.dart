@@ -5,7 +5,7 @@ import 'package:fragment/src/utils.dart';
 /// The builder will be called only when [keys] is different (not shallowly equal)
 /// from the previous [keys].
 class Fragment<T extends Widget> extends StatefulWidget {
-  final T Function(BuildContext context, T prev) builder;
+  final T Function(BuildContext context, T prev, Iterable prevKeys) builder;
   final Iterable keys;
 
   const Fragment(this.builder, {this.keys = const []});
@@ -27,10 +27,12 @@ class Fragment<T extends Widget> extends StatefulWidget {
 
 class _FragmentState<T extends Widget> extends State<Fragment<T>> {
   T prev;
+  Iterable prevKeys;
 
   @override
   Widget build(BuildContext context) {
-    prev = widget.builder(context, prev);
+    prev = widget.builder(context, prev, prevKeys);
+    prevKeys = widget.keys;
     return prev;
   }
 }

@@ -7,15 +7,16 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   /// Create a cached subtree.
   /// [builder] will be called only when [keys] is different (not shallowly equal)
   /// from the previous pass.
-  T fragment<T>(T builder(T prev), {Iterable keys = const []}) {
+  T fragment<T>(T builder(T prev, Iterable prevKeys),
+      {Iterable keys = const []}) {
     if (root.isLocked.now) {
       final parent = root.container.now;
       final self = parent.children[parent.childCursor.now];
       assert(self.childCursor.now == 0);
 
-      if (!shallowEquals(self.item.deps, keys)) {
+      if (!shallowEquals(self.item.keys, keys)) {
         root.container.now = self;
-        self.item = _CacheItem(builder(self.item.value), keys);
+        self.item = _CacheItem(builder(self.item.value, self.item.keys), keys);
         assert(identical(root.container.now, self));
         root.container.now = parent;
       }
@@ -30,7 +31,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
       assert(identical(parent.children[parent.childCursor.now], self));
 
       root.container.now = self;
-      self.item = _CacheItem(builder(null), keys);
+      self.item = _CacheItem(builder(null, null), keys);
       assert(identical(root.container.now, self));
       root.container.now = parent;
 
@@ -80,9 +81,9 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
 
 class _CacheItem {
   final Object value;
-  final Iterable deps;
+  final Iterable keys;
 
-  _CacheItem(this.value, this.deps);
+  _CacheItem(this.value, this.keys);
 }
 
 class _CacheRoot with _HasChildren {
