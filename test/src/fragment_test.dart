@@ -92,15 +92,15 @@ class _TestFragmentState<T extends Widget> extends State<TestFragment<T>> {
           context.widget;
           widget.reportBuild(1);
           return widget.child;
-        }, deps: [widget.key1]),
+        }, keys: [widget.key1]),
         Fragment((context, _) {
           widget.reportBuild(2);
           return widget.child;
-        }, deps: [widget.key2]),
+        }, keys: [widget.key2]),
         Fragment((context, _) {
           widget.reportBuild(3);
           return widget.child;
-        }, deps: [widget.key3]),
+        }, keys: [widget.key3]),
       ],
     );
   }

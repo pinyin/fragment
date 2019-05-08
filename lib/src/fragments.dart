@@ -5,17 +5,17 @@ import 'utils.dart';
 /// A mixin to add to your [State]
 mixin Fragments<W extends StatefulWidget> on State<W> {
   /// Create a cached subtree.
-  /// [builder] will be called only when [deps] is different (not shallowly equal)
+  /// [builder] will be called only when [keys] is different (not shallowly equal)
   /// from the previous pass.
-  T fragment<T>(T builder(T prev), {Iterable deps = const [], Key key}) {
+  T fragment<T>(T builder(T prev), {Iterable keys = const []}) {
     if (root.isLocked.now) {
       final parent = root.container.now;
       final self = parent.children[parent.childCursor.now];
       assert(self.childCursor.now == 0);
 
-      if (!shallowEquals(self.item.deps, deps)) {
+      if (!shallowEquals(self.item.deps, keys)) {
         root.container.now = self;
-        self.item = _CacheItem(builder(self.item.value), deps);
+        self.item = _CacheItem(builder(self.item.value), keys);
         assert(identical(root.container.now, self));
         root.container.now = parent;
       }
@@ -30,7 +30,7 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
       assert(identical(parent.children[parent.childCursor.now], self));
 
       root.container.now = self;
-      self.item = _CacheItem(builder(null), deps);
+      self.item = _CacheItem(builder(null), keys);
       assert(identical(root.container.now, self));
       root.container.now = parent;
 
