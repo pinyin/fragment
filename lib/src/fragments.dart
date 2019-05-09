@@ -25,7 +25,9 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
 
     if (isInit || !shallowEquals(self.keys, keys)) {
       root.container.now = self;
-      self.value = builder(self.value, self.keys);
+      final prevKeys = self.keys;
+      self.keys = keys;
+      self.value = builder(self.value, prevKeys);
       assert(identical(root.container.now, self));
       root.container.now = parent;
     }
