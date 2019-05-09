@@ -36,6 +36,5 @@
 
 * Provide previous value & keys to builder
 * Make nested `fragment()` calls act like React's `useMemo` 
-* Fix nested fragments support
 * Remove named fragments support
-* `deps` -> ` `keys`
+* Rename parameter `deps` to `keys`
