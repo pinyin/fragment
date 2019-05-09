@@ -13,25 +13,24 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
     final parent = root.container.now;
     final isInit = parent.children.length <= parent.childCursor.now;
     final _CacheNode self =
-        isInit ? _CacheNode() : parent.children[parent.childCursor.now];
+        isInit ? _CacheNode(keys) : parent.children[parent.childCursor.now];
     if (isInit) parent.children.add(self);
     // TODO optimize & test
-    if (parent is _CacheNode)
-      assert((self.item?.keys ?? []).every(parent.hasKey));
+    if (parent is _CacheNode) assert(keys.every(parent.hasKey));
 
     assert(self.childCursor.now == 0);
     assert(identical(parent.children[parent.childCursor.now], self));
 
-    if (isInit || !shallowEquals(self.item.keys, keys)) {
+    if (isInit || !shallowEquals(self.keys, keys)) {
       root.container.now = self;
-      self.item = _CacheItem(builder(self.item?.value, self.item?.keys), keys);
+      self.value = builder(self.value, self.keys);
       assert(identical(root.container.now, self));
       root.container.now = parent;
     }
 
     self.childCursor.now = 0;
     parent.childCursor.now++;
-    return self.item.value;
+    return self.value;
   }
 
   @override
@@ -64,13 +63,6 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
   final didInit = _Ref(false);
 }
 
-class _CacheItem {
-  final Object value;
-  final Iterable keys;
-
-  _CacheItem(this.value, this.keys);
-}
-
 class _CacheRoot with _HasChildren {
   final container = _Ref<_HasChildren>(null);
 
@@ -85,13 +77,14 @@ class _CacheRoot with _HasChildren {
 }
 
 class _CacheNode with _HasChildren {
-  _CacheItem item;
+  Object value;
+  Iterable keys;
 
   bool hasKey(Object key) {
-    return item.keys
-        .where((existingKey) => identical(key, existingKey))
-        .isNotEmpty;
+    return keys.where((existingKey) => identical(key, existingKey)).isNotEmpty;
   }
+
+  _CacheNode(this.keys);
 }
 
 mixin _HasChildren {
