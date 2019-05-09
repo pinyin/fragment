@@ -16,7 +16,9 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
         isInit ? _CacheNode(keys) : parent.children[parent.childCursor.now];
     if (isInit) parent.children.add(self);
     // TODO optimize & test
-    if (parent is _CacheNode) assert(keys.every(parent.hasKey));
+    if (parent is _CacheNode && !keys.every(parent.hasKey))
+      throw 'Fragment\'s keys must be a subset of its outer fragment\'s keys.\n'
+          'Received keys: $keys, outer ${parent.value ?? 'initalizing'} fragment\'s keys: ${parent.keys}.';
 
     assert(self.childCursor.now == 0);
     assert(identical(parent.children[parent.childCursor.now], self));
