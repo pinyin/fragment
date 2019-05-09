@@ -8,7 +8,7 @@ class Fragment<T extends Widget> extends StatefulWidget {
   final T Function(BuildContext context, T prev, Iterable prevKeys) builder;
   final Iterable keys;
 
-  const Fragment(this.builder, {this.keys = const []});
+  const Fragment(this.builder, {Key key, this.keys = const []}): super(key: key);
 
   @override
   operator ==(Object other) {
