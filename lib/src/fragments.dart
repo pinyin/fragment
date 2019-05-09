@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 
 import 'utils.dart';
@@ -14,6 +15,10 @@ mixin Fragments<W extends StatefulWidget> on State<W> {
     final _CacheNode self =
         isInit ? _CacheNode() : parent.children[parent.childCursor.now];
     if (isInit) parent.children.add(self);
+    // TODO optimize & test
+    if (parent is _CacheNode)
+      assert((self.item?.keys ?? []).every(parent.hasKey));
+
     assert(self.childCursor.now == 0);
     assert(identical(parent.children[parent.childCursor.now], self));
 
@@ -81,11 +86,17 @@ class _CacheRoot with _HasChildren {
 
 class _CacheNode with _HasChildren {
   _CacheItem item;
+
+  bool hasKey(Object key) {
+    return item.keys
+        .where((existingKey) => identical(key, existingKey))
+        .isNotEmpty;
+  }
 }
 
 mixin _HasChildren {
   @protected
-  final children = List<_CacheNode>();
+  final children = QueueList<_CacheNode>();
   final childCursor = _Ref(0);
 
   @mustCallSuper
