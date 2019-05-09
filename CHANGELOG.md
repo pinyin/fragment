@@ -38,3 +38,6 @@
 * Make nested `fragment()` calls act like React's `useMemo` 
 * Remove named fragments support
 * Rename parameter `deps` to `keys`
+
+## [0.3.1]
+* Ensure keys in children fragments form a subset of their parent fragment's keys.
