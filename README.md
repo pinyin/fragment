@@ -11,7 +11,7 @@ If you know React, you may consider this as a `shouldComponentUpdate` or `Memo` 
 ```dart
 
 // Add a mixin to your state and call `fragment` method in the build method of your state
-class _SState extends State<S> with Fragments {
+class _SState extends State<S> with Fragments /* Mixin is not need when only using Fragment */ {
   String text;
 
   @override
