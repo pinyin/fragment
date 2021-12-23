@@ -1,16 +1,15 @@
 name: fragment
 description: Easily prevent unnecessary build() calls in StatefulWidget and its subtrees.
-version: 0.3.1
-author: Bo Bao <bob432091@gmail.com>
+version: 0.4.0
 homepage: https://github.com/pinyin/fragment
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  collection: ^1.14.11
+  collection: ^1.15.0
 
 dev_dependencies:
   flutter_test:

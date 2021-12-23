@@ -1,120 +1,90 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
+import 'package:fragment/src/utils.dart';
 
-import 'utils.dart';
+typedef FragmentBuilder<T> = T Function(T? prevValue, Iterable? prevDeps);
 
 /// A mixin to add to your [State]
 mixin Fragments<W extends StatefulWidget> on State<W> {
   /// Create a cached subtree.
-  /// [builder] will be called only when [keys] is different (not shallowly equal)
-  /// from the previous pass.
-  T fragment<T>(T builder(T prev, Iterable prevKeys),
-      {Iterable keys = const []}) {
-    final parent = root.container.now;
-    final isInit = parent.children.length <= parent.childCursor.now;
-    final _CacheNode self =
-        isInit ? _CacheNode(keys) : parent.children[parent.childCursor.now];
-    if (isInit) parent.children.add(self);
-    // TODO optimize & test
-    if (parent is _CacheNode) {
-      var nth = 0;
-      for (final key in keys) {
-        if (!parent.hasKey(key))
-          throw 'Fragment\'s keys must be a subset of its outer fragment\'s keys.\n'
-              'Parent missing: keys[$nth] ($key).';
-        nth++;
-      }
+  ///
+  /// [builder] will be called only when [deps] is different from [deps]
+  /// provided in previous build (defined by IterableEquality().equals).
+  ///
+  /// [deps] would be compared in order, e.g. the first [fragment] call in
+  /// current build compares its [deps] with the first [fragment] call in
+  /// previous build, the second [fragment] call to previous' second, etc.
+  ///
+  /// If [group] is provided, [fragment]s within the same [group] (defined by
+  /// [==]) would be compared with the above logic.
+  ///
+  /// If current build is the first pass or the cached value is not of type [V],
+  /// builder would be called with null [prevValue] and [prevDeps].
+  @protected
+  T fragment<T>(FragmentBuilder<T> builder,
+      {required Iterable deps, Object? group}) {
+    _didPrepareBuild = false;
+
+    group ??= const Object();
+    final Iterator<_Cached>? prevDepsIter =
+        _cursors[group] ??= _previous[group]?.iterator;
+
+    final _Cached? cached =
+        prevDepsIter?.moveNext() != null ? prevDepsIter?.current : null;
+    if (cached is _Cached<T> && shallowEquals(cached.deps, deps)) {
+      (_next[group] ??= []).add(cached);
+      return cached.value;
     }
 
-    assert(self.childCursor.now == 0);
-    assert(identical(parent.children[parent.childCursor.now], self));
-
-    if (isInit || !shallowEquals(self.keys, keys)) {
-      root.container.now = self;
-      final prevKeys = self.keys;
-      self.keys = keys;
-      self.value = builder(self.value, prevKeys);
-      assert(identical(root.container.now, self));
-      root.container.now = parent;
-    }
-
-    self.childCursor.now = 0;
-    parent.childCursor.now++;
-    return self.value;
+    final value =
+        builder(cached?.value is T ? cached?.value : null, cached?.deps);
+    (_next[group] ??= []).add(_Cached(deps, value));
+    return value;
   }
 
   @override
   void reassemble() {
-    root.reset();
-    didInit.now = false;
+    _prepareBuild();
     super.reassemble();
   }
 
   @override
   void didChangeDependencies() {
-    root.childCursor.now = 0;
+    _prepareBuild();
     super.didChangeDependencies();
   }
 
   @override
   void didUpdateWidget(oldWidget) {
-    root.childCursor.now = 0;
+    _prepareBuild();
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   void setState(fn) {
-    root.childCursor.now = 0;
+    _prepareBuild();
     super.setState(fn);
   }
 
-  final root = _CacheRoot();
-  final justReassembled = _Ref(false);
-  final didInit = _Ref(false);
+  bool _didPrepareBuild = false;
+
+  void _prepareBuild() {
+    if (_didPrepareBuild) return;
+    _didPrepareBuild = true;
+
+    _previous.clear();
+    _previous.addAll(_next);
+    _next.clear();
+    _cursors.clear();
+  }
+
+  final _next = Map<Object, List<_Cached>>();
+  final _previous = Map<Object, List<_Cached>>();
+  final _cursors = Map<Object, Iterator<_Cached>?>();
 }
 
-class _CacheRoot with _HasChildren {
-  final container = _Ref<_HasChildren>(null);
+class _Cached<V> {
+  final Iterable deps;
+  final V value;
 
-  void reset() {
-    super.reset();
-    container.now = this;
-  }
-
-  _CacheRoot() {
-    container.now = this;
-  }
-}
-
-class _CacheNode with _HasChildren {
-  Object value;
-  Iterable keys;
-
-  bool hasKey(Object key) {
-    return keys.where((existingKey) => identical(key, existingKey)).isNotEmpty;
-  }
-
-  _CacheNode(this.keys);
-}
-
-mixin _HasChildren {
-  @protected
-  final children = QueueList<_CacheNode>();
-  final childCursor = _Ref(0);
-
-  @mustCallSuper
-  void reset() {
-    children.clear();
-    childCursor.now = 0;
-  }
-}
-
-class _Ref<T> {
-  _Ref(T init) : now = init;
-  T now;
-
-  @override
-  String toString() {
-    return "Ref:" + now.toString();
-  }
+  _Cached(this.deps, this.value);
 }

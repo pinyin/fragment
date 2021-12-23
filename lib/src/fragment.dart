@@ -1,39 +1,22 @@
 import 'package:flutter/widgets.dart';
-import 'package:fragment/src/utils.dart';
 
-/// A widget to cache [builder] with [keys]
-/// The builder will be called only when [keys] is different (not shallowly equal)
-/// from the previous [keys].
-class Fragment<T extends Widget> extends StatefulWidget {
-  final T Function(BuildContext context, T prev, Iterable prevKeys) builder;
-  final Iterable keys;
+import 'fragments.dart';
 
-  const Fragment(this.builder, {Key key, this.keys = const []})
-      : super(key: key);
+typedef FragmentFunc<T> = T Function(FragmentBuilder<T> builder,
+    {required Iterable deps, Object? group});
 
-  @override
-  operator ==(Object other) {
-    if (other is Fragment<T>) {
-      return shallowEquals(keys, other.keys);
-    }
-    return false;
-  }
+class Fragment extends StatefulWidget {
+  final Widget Function(BuildContext context, FragmentFunc fragment) builder;
 
-  @override
-  int get hashCode => keys.hashCode;
+  const Fragment(this.builder, {Key? key}) : super(key: key);
 
   @override
   _FragmentState createState() => _FragmentState();
 }
 
-class _FragmentState<T extends Widget> extends State<Fragment<T>> {
-  T prev;
-  Iterable prevKeys;
-
+class _FragmentState extends State<Fragment> with Fragments {
   @override
   Widget build(BuildContext context) {
-    prev = widget.builder(context, prev, prevKeys);
-    prevKeys = widget.keys;
-    return prev;
+    return widget.builder(context, fragment);
   }
 }

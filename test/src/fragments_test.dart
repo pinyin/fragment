@@ -6,109 +6,100 @@ import 'package:fragment/fragment.dart';
 
 void main() {
   group('Fragments', () {
-    testWidgets('should rebuild subtree only when deps are not identical',
+    testWidgets('should rebuild subtree whose keys are updated',
         (tester) async {
-      final buildLog = <int>[];
+      var buildCount = 0;
+      final builtKeys = <Iterable?>[];
+      final builtValues = <int?>[];
+      final FragmentBuilder builder = (prevValue, prevKeys) {
+        buildCount++;
+        builtKeys.add(prevKeys);
+        builtValues.add(prevValue);
+        return buildCount;
+      };
       await tester.pumpWidget(TestFragments(
-        reportBuild: (v) => buildLog.add(v),
-        key1: 1,
-        key2: 2,
-        key3: 3,
-        key4: 4,
-        child: Container(),
+        builder: builder,
+        items: [
+          KeyAndGroup(1, [1, 1]),
+          KeyAndGroup(2, [2, 1]),
+          KeyAndGroup(1, [1, 2]),
+          KeyAndGroup(2, [2, 1]),
+          KeyAndGroup(1, [1, 1]),
+          KeyAndGroup(1, [1, 3]),
+        ],
       ));
-      expect(buildLog, [1, 4, 2, 3]);
-      buildLog.clear();
+      expect(buildCount, 6);
+      expect(builtKeys, [null, null, null, null, null, null]);
+      expect(builtValues, [null, null, null, null, null, null]);
+      builtKeys.clear();
+      builtValues.clear();
+
       await tester.pumpWidget(TestFragments(
-        reportBuild: (v) => buildLog.add(v),
-        key1: -1,
-        key2: 2,
-        key3: 3,
-        key4: 4,
-        child: Container(),
+        builder: builder,
+        items: [
+          KeyAndGroup(1, [1, 1]),
+          KeyAndGroup(2, [2, 1]),
+          KeyAndGroup(2, [2, 1]),
+          KeyAndGroup(1, [1, 1]),
+          KeyAndGroup(1, [1, 3]),
+        ],
       ));
-      expect(buildLog, [1]);
-      buildLog.clear();
+      expect(buildCount, 8);
+      expect(builtKeys, [
+        [1, 2],
+        [1, 1]
+      ]);
+      expect(builtValues, [3, 5]);
+      builtKeys.clear();
+      builtValues.clear();
+
       await tester.pumpWidget(TestFragments(
-        reportBuild: (v) => buildLog.add(v),
-        key1: -1,
-        key2: 2,
-        key3: -3,
-        key4: 4,
-        child: Container(),
+        builder: builder,
+        items: [
+          KeyAndGroup(1, [1, 1]),
+          KeyAndGroup(2, [2, 1]),
+          KeyAndGroup(2, [2, 2]),
+          KeyAndGroup(1, [1, 1]),
+          KeyAndGroup(1, [1, 3]),
+        ],
       ));
-      expect(buildLog, [3]);
-      buildLog.clear();
-      await tester.pumpWidget(TestFragments(
-        reportBuild: (v) => buildLog.add(v),
-        key1: -1,
-        key2: -2,
-        key3: 3,
-        key4: 4,
-        child: Container(),
-      ));
-      expect(buildLog, [2, 3]);
-      buildLog.clear();
-      await tester.pumpWidget(TestFragments(
-        reportBuild: (v) => buildLog.add(v),
-        key1: -1,
-        key2: -2,
-        key3: 3,
-        key4: -4,
-        child: Container(),
-      ));
-      expect(buildLog, [1, 4]);
-      buildLog.clear();
+      expect(buildCount, 9);
+      expect(builtKeys, [
+        [2, 1],
+      ]);
+      expect(builtValues, [4]);
+      builtKeys.clear();
+      builtValues.clear();
     });
   });
 }
 
-class TestFragments extends StatefulWidget {
-  final Function(int) reportBuild;
-  final int key1;
-  final int key2;
-  final int key3;
-  final int key4;
-  final Widget child;
+class TestFragments<A, B, C> extends StatefulWidget {
+  final FragmentBuilder builder;
+  final Iterable<KeyAndGroup> items;
 
-  const TestFragments(
-      {Key key,
-      this.reportBuild,
-      this.key1,
-      this.key2,
-      this.key3,
-      this.child,
-      this.key4})
-      : super(key: key);
+  const TestFragments({required this.builder, required this.items}) : super();
 
   @override
   _TestFragmentsState createState() => _TestFragmentsState();
 }
 
+class KeyAndGroup {
+  final Object group;
+  final Iterable keys;
+
+  KeyAndGroup(this.group, this.keys);
+}
+
 class _TestFragmentsState extends State<TestFragments> with Fragments {
   @override
   Widget build(BuildContext context) {
-    final s = fragment((_, __) => 'a', keys: []);
-    assert(s is String);
+    widget.items.forEach((element) {
+      fragment<dynamic>((prevValue, prevKeys) {
+        return widget.builder(prevValue, prevKeys);
+      }, deps: element.keys, group: element.group);
+    });
 
-    return Column(
-      children: <Widget>[
-        fragment((_, __) {
-          widget.reportBuild(1);
-          fragment((_, __) {
-            widget.reportBuild(4);
-          }, keys: [widget.key4]);
-          return widget.child;
-        }, keys: [widget.key1, widget.key4]),
-        fragment((_, __) {
-          widget.reportBuild(2);
-          return widget.child;
-        }, keys: [widget.key2]),
-        fragment((_, __) {
-          widget.reportBuild(3);
-          return widget.child;
-        }, keys: [widget.key3]),
-      ],
-    );
+    return Container();
   }
 }

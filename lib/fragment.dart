@@ -1,4 +1,4 @@
 library fragment;
 
-export 'src/fragment.dart' show Fragment;
-export 'src/fragments.dart' show Fragments;
+export 'src/fragment.dart';
+export 'src/fragments.dart';

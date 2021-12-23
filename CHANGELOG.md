@@ -35,9 +35,15 @@
 ## [0.3.0]
 
 * Provide previous value & keys to builder
-* Make nested `fragment()` calls act like React's `useMemo` 
+* Make nested `fragment()` calls act like React's `useMemo`
 * Remove named fragments support
 * Rename parameter `deps` to `keys`
 
 ## [0.3.1]
+
 * Ensure keys in children fragments form a subset of their parent fragment's keys.
+
+## [0.4.0]
+
+* Enable null-safety
+* Remove `Fragment` widget.
