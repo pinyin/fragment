@@ -1,7 +1,5 @@
 # fragment
 
-[![Build Status](https://travis-ci.com/pinyin/fragment.svg?branch=master)](https://travis-ci.com/pinyin/fragment)
-
 Prevent unnecessary build() calls in StatefulWidget and its subtrees in a readable way.
 
 If you know React, you may consider this as an alternative for `shouldComponentUpdate` or `useMemo` in Flutter.
